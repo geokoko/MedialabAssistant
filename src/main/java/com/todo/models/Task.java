@@ -1,4 +1,5 @@
-package models;
+package com.todo.models;
+
 import java.time.LocalDate;
 
 public class Task {

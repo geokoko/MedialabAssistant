@@ -1,4 +1,4 @@
-package models;
+package com.todo.models;
 
 public enum TaskStatus {
     OPEN,

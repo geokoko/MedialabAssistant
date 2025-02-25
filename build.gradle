@@ -33,7 +33,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'App'
+    mainClass = 'com.todo.App'
 }
 
 tasks.named('test') {
