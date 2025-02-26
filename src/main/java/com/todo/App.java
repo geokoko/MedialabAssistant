@@ -2,6 +2,10 @@ package com.todo;
 
 public class App {
     public static void main(String[] args) {
-        System.out.println("Task Manager is running!");
+        TaskManagerUI.launch(args);
     }
+
+	public String getGreeting() {
+		return "Hello, Task Manager!";
+	}
 }
