@@ -33,9 +33,9 @@ public class TaskManagerUI extends Application {
     private Label upcomingTasksLabel;
     
     private TableView<Task> tasksTable;
-    private ListView<Category> categoriesList;
-    private ListView<Priority> prioritiesList;
-    private TableView<Reminder> remindersTable;
+    private ListView<TaskCategory> categoriesList;
+    private ListView<TaskPriority> prioritiesList;
+    private TableView<TaskReminder> remindersTable;
     private TableView<Task> searchResultsTable;
     
     private final String dataDir = "medialab";
@@ -220,9 +220,9 @@ public class TaskManagerUI extends Application {
         
         remindersTable = new TableView<>();
         remindersTable.setPlaceholder(new Label("No reminders available"));
-        TableColumn<Reminder, String> taskTitleCol = new TableColumn<>("Task Title");
+        TableColumn<TaskReminder, String> taskTitleCol = new TableColumn<>("Task Title");
         taskTitleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTask().getTitle()));
-        TableColumn<Reminder, String> reminderDateCol = new TableColumn<>("Reminder Date");
+        TableColumn<TaskReminder, String> reminderDateCol = new TableColumn<>("Reminder Date");
         reminderDateCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getReminderDate().toString()));
         remindersTable.getColumns().addAll(taskTitleCol, reminderDateCol);
         
@@ -284,10 +284,10 @@ public class TaskManagerUI extends Application {
         
         // Populate ComboBoxes from current categories and priorities
         categoryBox.setItems(FXCollections.observableArrayList(
-            taskManager.getCategories().stream().map(Category::getName).toList()
+            taskManager.getCategories().stream().map(TaskCategory::getName).toList()
         ));
         priorityBox.setItems(FXCollections.observableArrayList(
-            taskManager.getPriorities().stream().map(Priority::getName).toList()
+            taskManager.getPriorities().stream().map(TaskPriority::getName).toList()
         ));
         
         vbox.getChildren().addAll(searchFields, searchResultsTable);
@@ -333,11 +333,11 @@ public class TaskManagerUI extends Application {
         TextField descriptionField = new TextField();
         ComboBox<String> categoryBox = new ComboBox<>();
         categoryBox.setItems(FXCollections.observableArrayList(
-            taskManager.getCategories().stream().map(Category::getName).toList()
+            taskManager.getCategories().stream().map(TaskCategory::getName).toList()
         ));
         ComboBox<String> priorityBox = new ComboBox<>();
         priorityBox.setItems(FXCollections.observableArrayList(
-            taskManager.getPriorities().stream().map(Priority::getName).toList()
+            taskManager.getPriorities().stream().map(TaskPriority::getName).toList()
         ));
         DatePicker deadlinePicker = new DatePicker();
         
@@ -396,12 +396,12 @@ public class TaskManagerUI extends Application {
         TextField descriptionField = new TextField(selected.getDescription());
         ComboBox<String> categoryBox = new ComboBox<>();
         categoryBox.setItems(FXCollections.observableArrayList(
-            taskManager.getCategories().stream().map(Category::getName).toList()
+            taskManager.getCategories().stream().map(TaskCategory::getName).toList()
         ));
         categoryBox.setValue(selected.getCategory());
         ComboBox<String> priorityBox = new ComboBox<>();
         priorityBox.setItems(FXCollections.observableArrayList(
-            taskManager.getPriorities().stream().map(Priority::getName).toList()
+            taskManager.getPriorities().stream().map(TaskPriority::getName).toList()
         ));
         priorityBox.setValue(selected.getPriority());
         DatePicker deadlinePicker = new DatePicker(selected.getDeadline());
@@ -483,7 +483,7 @@ public class TaskManagerUI extends Application {
      * Displays a dialog to edit the selected category.
      */
     private void showEditCategoryDialog() {
-        Category selected = categoriesList.getSelectionModel().getSelectedItem();
+        TaskCategory selected = categoriesList.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("No Selection", "Please select a category to edit.");
             return;
@@ -505,7 +505,7 @@ public class TaskManagerUI extends Application {
      * Deletes the selected category.
      */
     private void deleteSelectedCategory() {
-        Category selected = categoriesList.getSelectionModel().getSelectedItem();
+        TaskCategory selected = categoriesList.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("No Selection", "Please select a category to delete.");
             return;
@@ -539,7 +539,7 @@ public class TaskManagerUI extends Application {
      * Displays a dialog to edit the selected priority.
      */
     private void showEditPriorityDialog() {
-        Priority selected = prioritiesList.getSelectionModel().getSelectedItem();
+        TaskPriority selected = prioritiesList.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("No Selection", "Please select a priority to edit.");
             return;
@@ -561,7 +561,7 @@ public class TaskManagerUI extends Application {
      * Deletes the selected priority.
      */
     private void deleteSelectedPriority() {
-        Priority selected = prioritiesList.getSelectionModel().getSelectedItem();
+        TaskPriority selected = prioritiesList.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("No Selection", "Please select a priority to delete.");
             return;
@@ -578,7 +578,7 @@ public class TaskManagerUI extends Application {
      * Displays a dialog to add a new reminder.
      */
     private void showAddReminderDialog() {
-        Dialog<Reminder> dialog = new Dialog<>();
+        Dialog<TaskReminder> dialog = new Dialog<>();
         dialog.setTitle("Add Reminder");
         
         TextField taskTitleField = new TextField();
@@ -605,7 +605,7 @@ public class TaskManagerUI extends Application {
                         .filter(t -> t.getTitle().equals(taskTitleField.getText()))
                         .findFirst().orElse(null);
                 if (task != null) {
-                    return new Reminder(task, reminderDatePicker.getValue());
+                    return new TaskReminder(task, reminderDatePicker.getValue());
                 }
             }
             return null;
@@ -625,7 +625,7 @@ public class TaskManagerUI extends Application {
      * Deletes the selected reminder.
      */
     private void deleteSelectedReminder() {
-        Reminder selected = remindersTable.getSelectionModel().getSelectedItem();
+        TaskReminder selected = remindersTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("No Selection", "Please select a reminder to delete.");
             return;

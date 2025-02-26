@@ -1,13 +1,13 @@
 package com.todo.models;
 
-public class Priority {
+public class TaskCategory {
     private String name;
 
-	public Priority() {
+	public TaskCategory() {
 
 	}
 
-    public Priority(String name) {
+    public TaskCategory(String name) {
         this.name = name;
     }
 

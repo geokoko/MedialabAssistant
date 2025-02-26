@@ -2,11 +2,11 @@ package com.todo.models;
 
 import java.time.LocalDate;
 
-public class Reminder {
+public class TaskReminder {
     private Task task;
     private LocalDate reminderDate;
 
-    public Reminder(Task task, LocalDate reminderDate) {
+    public TaskReminder(Task task, LocalDate reminderDate) {
         this.task = task;
         this.reminderDate = reminderDate;
     }

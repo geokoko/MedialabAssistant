@@ -21,9 +21,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class TaskManager {
 	private List<Task> tasks;
-	private List<Category> categories;
-	private List<Priority> priorities;
-	private List<Reminder> reminders;
+	private List<TaskCategory> categories;
+	private List<TaskPriority> priorities;
+	private List<TaskReminder> reminders;
 
 	public TaskManager() {
 		tasks = new ArrayList<>();
@@ -33,13 +33,13 @@ public class TaskManager {
 
 		// On startup, load data from jsons in memory
 		loadData("tasks.json", tasks, new TypeReference<List<Task>>() {});
-		loadData("categories.json", categories, new TypeReference<List<Category>>() {});
-		loadData("priorities.json", priorities, new TypeReference<List<Priority>>() {});
-		loadData("reminders.json", reminders, new TypeReference<List<Reminder>>() {});
+		loadData("categories.json", categories, new TypeReference<List<TaskCategory>>() {});
+		loadData("priorities.json", priorities, new TypeReference<List<TaskPriority>>() {});
+		loadData("reminders.json", reminders, new TypeReference<List<TaskReminder>>() {});
 
 		// MAKE SURE DEFAULT PRIORITY EXISTS !
 		boolean defaultExists = false;
-		for (Priority p : priorities) {
+		for (TaskPriority p : priorities) {
 			if (p.getName().equals("Default")) {
 				defaultExists = true;
 				break;
@@ -47,7 +47,7 @@ public class TaskManager {
 		}
 
 		if (!defaultExists) {
-			priorities.add(new Priority("Default"));
+			priorities.add(new TaskPriority("Default"));
 			saveData("priorities.json", priorities);
 		}
 
@@ -87,15 +87,15 @@ public class TaskManager {
 		return tasks;
 	}
 
-	public List<Category> getCategories() {
+	public List<TaskCategory> getCategories() {
 		return categories;
 	}
 
-	public List<Priority> getPriorities() {
+	public List<TaskPriority> getPriorities() {
 		return priorities;
 	}
 
-	public List<Reminder> getReminders() {
+	public List<TaskReminder> getReminders() {
 		return reminders;
 	}
 
@@ -197,10 +197,10 @@ public class TaskManager {
 		if (categories.stream().anyMatch(c -> c.getName().equalsIgnoreCase(name))) {
 			throw new IllegalArgumentException("Category already exists: " + name);
 		}
-		categories.add(new Category(name));
+		categories.add(new TaskCategory(name));
 	}
 
-	public void removeCategory(Category category) {
+	public void removeCategory(TaskCategory category) {
 		if (!categories.contains(category)) {
 			throw new IllegalArgumentException("Category does not exist: " + category.getName());
 		}
@@ -208,7 +208,7 @@ public class TaskManager {
 		tasks.removeIf(task -> task.getCategory().equals(category.getName()));
 	}
 
-	public void renameCategory(Category category, String newName) {
+	public void renameCategory(TaskCategory category, String newName) {
 		if (newName == null || newName.trim().isEmpty()) {
 			throw new IllegalArgumentException("New category name cannot be empty.");
 		}
@@ -228,10 +228,10 @@ public class TaskManager {
 		if (priorities.stream().anyMatch(p -> p.getName().equalsIgnoreCase(name))) {
 			throw new IllegalArgumentException("Priority already exists: " + name);
 		}
-		priorities.add(new Priority(name));
+		priorities.add(new TaskPriority(name));
 	}
 
-	public void removePriority(Priority priority) {
+	public void removePriority(TaskPriority priority) {
 		if (!priorities.contains(priority)) {
 			throw new IllegalArgumentException("Priority does not exist: " + priority.getName());
 		}
@@ -246,7 +246,7 @@ public class TaskManager {
 		});
 	}
 
-	public void renamePriority(Priority priority, String newName) {
+	public void renamePriority(TaskPriority priority, String newName) {
 		if (newName == null || newName.trim().isEmpty()) {
 			throw new IllegalArgumentException("New priority name cannot be empty.");
 		}
@@ -270,7 +270,7 @@ public class TaskManager {
 		if (task.getStatus() == TaskStatus.COMPLETED) {
 			throw new IllegalStateException("Cannot add a reminder for a completed task!");
 		}
-		reminders.add(new Reminder(task, reminderDate));
+		reminders.add(new TaskReminder(task, reminderDate));
 	}
 
 	// -----------------------------------------------------
