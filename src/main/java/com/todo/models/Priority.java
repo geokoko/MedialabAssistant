@@ -3,6 +3,10 @@ package com.todo.models;
 public class Priority {
     private String name;
 
+	public Priority() {
+
+	}
+
     public Priority(String name) {
         this.name = name;
     }
