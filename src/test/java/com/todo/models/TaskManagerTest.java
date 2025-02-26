@@ -129,7 +129,7 @@ public class TaskManagerTest {
 
 		assertEquals(1, taskManager.getReminders().size(), "Reminder should be added");
 
-		Reminder reminder = taskManager.getReminders().get(0);
+		TaskReminder reminder = taskManager.getReminders().get(0);
 		assertEquals(task.getTitle(), reminder.getTask().getTitle(), "Reminder should be associated with the correct task");
 		assertEquals(reminderDate, reminder.getReminderDate(), "Reminder date should match");
 		System.out.println("Reminder added succesfully!");
@@ -143,7 +143,7 @@ public class TaskManagerTest {
 		assertTrue(taskManager.getCategories().stream().anyMatch(c -> c.getName().equals("Hobby")));
 
 		// Rename an existing category.
-		Category category = taskManager.getCategories().stream()
+		TaskCategory category = taskManager.getCategories().stream()
 			.filter(c -> c.getName().equals("Work")).findFirst().orElse(null);
 		assertNotNull(category);
 		taskManager.renameCategory(category, "Office");
@@ -153,7 +153,7 @@ public class TaskManagerTest {
 		// Removing a category should also remove tasks associated with it.
 		Task task = new Task("Task7", "Description7", "Personal", "High", LocalDate.now().plusDays(1));
 		taskManager.addTask(task);
-		Category personalCategory = taskManager.getCategories().stream()
+		TaskCategory personalCategory = taskManager.getCategories().stream()
 			.filter(c -> c.getName().equals("Personal")).findFirst().orElse(null);
 		assertNotNull(personalCategory);
 		taskManager.removeCategory(personalCategory);
@@ -169,7 +169,7 @@ public class TaskManagerTest {
 		assertTrue(taskManager.getPriorities().stream().anyMatch(p -> p.getName().equals("Urgent")));
 
 		// Rename the new priority.
-		Priority priority = taskManager.getPriorities().stream()
+		TaskPriority priority = taskManager.getPriorities().stream()
 			.filter(p -> p.getName().equals("Urgent")).findFirst().orElse(null);
 		assertNotNull(priority);
 		taskManager.renamePriority(priority, "Critical");
@@ -179,7 +179,7 @@ public class TaskManagerTest {
 		// Removing a priority should update tasks using it to the "Default" priority.
 		Task task = new Task("Task8", "Description8", "Work", "Critical", LocalDate.now().plusDays(1));
 		taskManager.addTask(task);
-		Priority criticalPriority = taskManager.getPriorities().stream()
+		TaskPriority criticalPriority = taskManager.getPriorities().stream()
 			.filter(p -> p.getName().equals("Critical")).findFirst().orElse(null);
 		assertNotNull(criticalPriority);
 		taskManager.removePriority(criticalPriority);
