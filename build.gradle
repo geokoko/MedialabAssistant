@@ -12,10 +12,11 @@ def javafxVersion = '21'
 dependencies {
     implementation 'com.google.guava:guava:32.1.2-jre'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
 
     // Remove manual JavaFX dependencies; the plugin will handle them.
-    testImplementation 'org.junit.jupiter:junit-jupiter'  
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'  
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.2'
 }
 
 javafx {
@@ -38,4 +39,6 @@ application {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+
 
