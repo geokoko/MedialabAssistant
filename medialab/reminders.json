@@ -1,1 +1,21 @@
-[ ]
+[ {
+  "task" : {
+    "title" : "Math",
+    "description" : "Should Do Math Homework",
+    "category" : "School",
+    "priority" : "High",
+    "deadline" : "2025-02-28",
+    "status" : "OPEN"
+  },
+  "reminderDate" : "2025-02-28"
+}, {
+  "task" : {
+    "title" : "Math",
+    "description" : "Should Do Math Homework",
+    "category" : "School",
+    "priority" : "High",
+    "deadline" : "2025-02-28",
+    "status" : "OPEN"
+  },
+  "reminderDate" : "2025-03-19"
+} ]
