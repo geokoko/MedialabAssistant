@@ -9,6 +9,10 @@ public class App extends Application {
         launch(args);
     }
 
+    public String getGreeting() {
+        return "Hello, Task Manager!";
+    }
+
     @Override
     public void start(Stage primaryStage) {
         new TaskManagerUI().start(primaryStage); // Delegate to TaskManagerUI
