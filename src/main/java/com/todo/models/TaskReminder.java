@@ -6,6 +6,11 @@ public class TaskReminder {
     private Task task;
     private LocalDate reminderDate;
 
+    // default constructor
+    public TaskReminder() {
+    
+    }
+
     public TaskReminder(Task task, LocalDate reminderDate) {
         this.task = task;
         this.reminderDate = reminderDate;

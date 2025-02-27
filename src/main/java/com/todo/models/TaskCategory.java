@@ -3,6 +3,7 @@ package com.todo.models;
 public class TaskCategory {
     private String name;
 
+    // default constructor
 	public TaskCategory() {
 
 	}

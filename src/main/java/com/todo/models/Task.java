@@ -10,6 +10,7 @@ public class Task {
     private LocalDate deadline;
     private TaskStatus status;
 
+    // default constructor
 	public Task() {
 
 	}

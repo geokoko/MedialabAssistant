@@ -3,6 +3,7 @@ package com.todo.models;
 public class TaskPriority {
     private String name;
 
+    // default constructor
 	public TaskPriority() {
 
 	}
