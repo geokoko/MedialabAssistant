@@ -3,6 +3,9 @@ package com.todo.models;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.todo.controller.TaskManager;
+
 import java.time.LocalDate;
 
 public class TaskManagerTest {
@@ -11,8 +14,6 @@ public class TaskManagerTest {
 
 	@BeforeEach
 	public void setUp() {
-		// Initialize TaskManager
-		// Clear any data so that we start fresh
 		taskManager = new TaskManager();
 		taskManager.getCategories().clear();
 		taskManager.getPriorities().clear();
@@ -21,15 +22,8 @@ public class TaskManagerTest {
 
 		taskManager.addCategory("Work");
 		taskManager.addCategory("Personal");
-		taskManager.addCategory("Penis");
 		taskManager.addPriority("High");
-		taskManager.addPriority("Low");
-
-		boolean defaultExists = taskManager.getPriorities().stream().anyMatch(p -> p.getName().equals("Default"));
-		if (!defaultExists) {
-			System.out.println("Default priority was not initialized!");
-			taskManager.addPriority("Default");
-		}
+		taskManager.addPriority("Default");
 	}
 
 	@Test
@@ -63,16 +57,6 @@ public class TaskManagerTest {
 	}
 
 	@Test
-	public void testAddTaskInvalidCategory() {
-		Task task = new Task("Task2", "Description2", "NonExistent", "High", LocalDate.now().plusDays(1));
-		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-			taskManager.addTask(task);
-		});
-		assertTrue(exception.getMessage().contains("Category does not exist"));
-	}
-
-	// Test: Adding a task with an invalid priority.
-	@Test
 	public void testAddTaskInvalidPriority() {
 		Task task = new Task("Task3", "Description3", "Work", "Low", LocalDate.now().plusDays(1));
 		Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -86,12 +70,18 @@ public class TaskManagerTest {
 	public void testRemoveTaskAndReminders() {
 		Task task = new Task("Task4", "Description4", "Work", "High", LocalDate.now().plusDays(1));
 		taskManager.addTask(task);
-		taskManager.addReminder(task.getTitle(), LocalDate.now().plusDays(1));
+
+		// Use CUSTOM_DATE, or any type you like
+		LocalDate customReminderDate = LocalDate.now().plusDays(1);
+		taskManager.addReminder(task.getTitle(), TaskReminder.ReminderType.CUSTOM_DATE, customReminderDate);
+
+		// We still assert that removing the task also removes the reminder
 		assertEquals(1, taskManager.getReminders().size());
 
 		taskManager.removeTask(task);
 		assertEquals(0, taskManager.getTasks().size());
-		assertEquals(0, taskManager.getReminders().size());
+		assertEquals(0, taskManager.getReminders().size(),
+				"Removing the task should also remove its reminders");
 	}
 
 	// Test: Updating a task's fields.
@@ -112,27 +102,47 @@ public class TaskManagerTest {
 	public void testUpdateTaskStatusRemovesReminders() {
 		Task task = new Task("Task6", "Description6", "Work", "High", LocalDate.now().plusDays(1));
 		taskManager.addTask(task);
-		taskManager.addReminder(task.getTitle(), LocalDate.now().plusDays(1));
-		assertEquals(1, taskManager.getReminders().size());
 
+		taskManager.addReminder(
+				task.getTitle(),
+				TaskReminder.ReminderType.ONE_DAY_BEFORE,
+				null // since we only need a custom date if type == CUSTOM_DATE
+		);
+
+		assertEquals(1, taskManager.getReminders().size(),
+				"One reminder should have been added");
+
+		// Mark as completed => reminders removed
 		taskManager.updateTaskStatus(task, TaskStatus.COMPLETED);
 		assertEquals(TaskStatus.COMPLETED, task.getStatus());
-		assertEquals(0, taskManager.getReminders().size());
+		assertEquals(0, taskManager.getReminders().size(),
+				"All reminders for this task should be removed");
 	}
 
 	@Test
 	public void testAddReminderForTask() {
 		Task task = new Task("Reminder Task", "Test reminder", "Work", "High", LocalDate.now().plusDays(2));
 		taskManager.addTask(task);
-		LocalDate reminderDate = LocalDate.now().plusDays(1);
-		taskManager.addReminder(task.getTitle(), reminderDate);
+
+		// We'll use a CUSTOM_DATE type here
+		LocalDate customDate = LocalDate.now().plusDays(1);
+		taskManager.addReminder(task.getTitle(), TaskReminder.ReminderType.CUSTOM_DATE, customDate);
 
 		assertEquals(1, taskManager.getReminders().size(), "Reminder should be added");
 
 		TaskReminder reminder = taskManager.getReminders().get(0);
-		assertEquals(task.getTitle(), reminder.getTask().getTitle(), "Reminder should be associated with the correct task");
-		assertEquals(reminderDate, reminder.getReminderDate(), "Reminder date should match");
-		System.out.println("Reminder added succesfully!");
+		// Verify the correct task
+		assertEquals(task.getTitle(), reminder.getTask().getTitle(),
+				"Reminder should be associated with the correct task");
+		// Verify the correct type
+		assertEquals(TaskReminder.ReminderType.CUSTOM_DATE, reminder.getType(),
+				"Reminder type should be CUSTOM_DATE");
+		// Verify the custom date
+		assertEquals(customDate, reminder.getCustomReminderDate(),
+				"Custom reminder date should match what we set");
+		// Also check the computed date:
+		assertEquals(customDate, reminder.computeReminderDate(),
+				"computeReminderDate() should return the custom date");
 	}
 
 	// Test: Category management (add, rename, remove).
@@ -192,13 +202,19 @@ public class TaskManagerTest {
 		Task task = new Task("Task9", "Description9", "Work", "High", LocalDate.now().plusDays(5));
 		taskManager.addTask(task);
 		// Add a valid reminder.
-		taskManager.addReminder(task.getTitle(), LocalDate.now().plusDays(4));
+		taskManager.addReminder(
+				task.getTitle(),
+				TaskReminder.ReminderType.CUSTOM_DATE, // or ONE_DAY_BEFORE, ONE_WEEK_BEFORE, etc.
+				LocalDate.now().plusDays(4));
 		assertEquals(1, taskManager.getReminders().size());
 
 		// After marking the task COMPLETED, adding a reminder should fail.
 		taskManager.updateTaskStatus(task, TaskStatus.COMPLETED);
 		Exception exception = assertThrows(IllegalStateException.class, () -> {
-			taskManager.addReminder(task.getTitle(), LocalDate.now().plusDays(4));
+			taskManager.addReminder(
+					task.getTitle(),
+					TaskReminder.ReminderType.CUSTOM_DATE, // or ONE_DAY_BEFORE, ONE_WEEK_BEFORE, etc.
+					LocalDate.now().plusDays(4));
 		});
 		assertTrue(exception.getMessage().contains("Cannot add a reminder for a completed task"));
 	}

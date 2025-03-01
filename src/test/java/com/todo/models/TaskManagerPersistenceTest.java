@@ -3,6 +3,7 @@ package com.todo.models;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.todo.controller.TaskManager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.jupiter.api.*;
 
@@ -58,10 +59,7 @@ public class TaskManagerPersistenceTest {
         TaskManager tm = new TaskManager();
         List<Task> tasks = tm.getTasks();
         assertEquals(1, tasks.size());
-
-		for (Task : tasks) {
-			System.out.println()
-		}
+        
         // The task should be marked as DELAYED because its deadline is in the past.
         assertEquals(TaskStatus.DELAYED, tasks.get(0).getStatus());
     }
