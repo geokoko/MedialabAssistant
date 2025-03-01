@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -687,7 +689,7 @@ public class TaskManagerUI extends Application {
             return;
         }
         try {
-            taskManager.getReminders().removeIf(r -> r.getTask().getTitle().equals(selected.getTask().getTitle()));
+            taskManager.getReminders().remove(selected);
             refreshAllViews();
         } catch (Exception ex) {
             showError("Error Deleting Reminder", ex.getMessage());
@@ -706,9 +708,19 @@ public class TaskManagerUI extends Application {
     /**
      * Reminder snooze functionality
      */
+
+    // Hash map to store reminders that have already been shown in current session
+    private final Set<TaskReminder> shownReminders = new HashSet<>();
+
     private void snoozeReminder(TaskReminder reminder) {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.schedule(() -> Platform.runLater(() -> showReminderAlert(reminder)), 5, TimeUnit.MINUTES);
+        scheduler.schedule(() -> {
+            Platform.runLater(() -> {
+                shownReminders.remove(reminder); // Allow reminder to be shown again
+                showReminderAlert(reminder);
+                shownReminders.add(reminder); // Mark as shown again
+            });
+        }, 5, TimeUnit.MINUTES);
     }
 
     /**
@@ -721,7 +733,7 @@ public class TaskManagerUI extends Application {
         alert.setHeaderText("Reminder for Task: " + reminder.getTask().getTitle());
         alert.setContentText("Due today: " + reminder.computeReminderDate());
 
-        ButtonType snoozeButton = new ButtonType("Snooze (5 min)");
+        ButtonType snoozeButton = new ButtonType("Snooze", ButtonBar.ButtonData.OK_DONE);
         ButtonType dismissButton = new ButtonType("Dismiss", ButtonBar.ButtonData.CANCEL_CLOSE);
 
         alert.getButtonTypes().setAll(snoozeButton, dismissButton);
@@ -731,6 +743,7 @@ public class TaskManagerUI extends Application {
                 snoozeReminder(reminder);
             } else if (response == dismissButton) {
                 taskManager.getReminders().remove(reminder); // Remove reminder permanently
+                shownReminders.remove(reminder);
                 refreshAllViews();
             }
         });
@@ -744,9 +757,12 @@ public class TaskManagerUI extends Application {
         LocalDate today = LocalDate.now();
 
         List<TaskReminder> dueReminders = taskManager.getReminders().stream()
-                .filter(r -> r.computeReminderDate().equals(today)).toList();
+                .filter(r -> r.computeReminderDate().equals(today))
+                .filter(r -> !shownReminders.contains(r))
+                .toList();
 
         for (TaskReminder reminder : dueReminders) {
+            shownReminders.add(reminder); // mark reminder as shown
             showReminderAlert(reminder);
         }
     }
