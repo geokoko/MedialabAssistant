@@ -45,6 +45,8 @@ public class TaskManagerUI extends Application {
     private TableView<Task> searchResultsTable;
 
     private final String dataDir = "medialab";
+    private ScheduledExecutorService reminderScheduler;
+    private final Set<TaskReminder> shownReminders = new HashSet<>();
 
     // Register the JavaTimeModule so it can handle LocalDate properly
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule()).disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -93,7 +95,7 @@ public class TaskManagerUI extends Application {
         Scene scene = new Scene(root, 1000, 600);
         primaryStage.setTitle("MediaLab Assistant");
         primaryStage.setScene(scene);
-        primaryStage.show();
+
 
         updateSummary();
         refreshAllViews();
@@ -101,8 +103,14 @@ public class TaskManagerUI extends Application {
         // On close, persist data to JSON files
         primaryStage.setOnCloseRequest(e -> {
             persistData();
+
+            if (reminderScheduler != null && !reminderScheduler.isShutdown()) {
+                reminderScheduler.shutdownNow();
+            }
+
             Platform.exit();
         });
+        primaryStage.show();
     }
 
     private HBox createSummaryPane() {
@@ -704,21 +712,17 @@ public class TaskManagerUI extends Application {
         alert.showAndWait();
     }
 
-    // [CHANGED] Snooze reminder functionality
     /**
      * Reminder snooze functionality
      */
-
-    // Hash map to store reminders that have already been shown in current session
-    private final Set<TaskReminder> shownReminders = new HashSet<>();
-
     private void snoozeReminder(TaskReminder reminder) {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(() -> {
             Platform.runLater(() -> {
-                shownReminders.remove(reminder); // Allow reminder to be shown again
+                shownReminders.remove(reminder);
                 showReminderAlert(reminder);
-                shownReminders.add(reminder); // Mark as shown again
+                shownReminders.add(reminder);
+                scheduler.shutdown(); // Shut down after this one snooze job
             });
         }, 5, TimeUnit.MINUTES);
     }
@@ -768,8 +772,8 @@ public class TaskManagerUI extends Application {
     }
 
     private void startReminderChecker() {
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(() -> {
+        reminderScheduler = Executors.newSingleThreadScheduledExecutor();
+        reminderScheduler.scheduleAtFixedRate(() -> {
             Platform.runLater(() -> checkReminders());
         }, 0, 1, TimeUnit.MINUTES); // Runs every minute
     }
