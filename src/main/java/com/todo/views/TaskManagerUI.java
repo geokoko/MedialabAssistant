@@ -219,19 +219,26 @@ public class TaskManagerUI extends Application {
 
         remindersTable = new TableView<>();
         remindersTable.setPlaceholder(new Label("No reminders available"));
+
         TableColumn<TaskReminder, String> taskTitleCol = new TableColumn<>("Task Title");
         taskTitleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTask().getTitle()));
+
         TableColumn<TaskReminder, String> reminderDateCol = new TableColumn<>("Reminder Date");
-        reminderDateCol
-                .setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getReminderDate().toString()));
+        reminderDateCol.setCellValueFactory(data -> {
+            LocalDate date = data.getValue().computeReminderDate();
+            return new SimpleStringProperty(date != null ? date.toString() : "N/A");
+        });
+
         remindersTable.getColumns().addAll(taskTitleCol, reminderDateCol);
 
         Button addButton = new Button("Add Reminder");
         addButton.setOnAction(e -> showAddReminderDialog());
+        Button editButton = new Button("Edit Reminder");
+        editButton.setOnAction(e -> showEditReminderDialog());
         Button deleteButton = new Button("Delete Reminder");
         deleteButton.setOnAction(e -> deleteSelectedReminder());
 
-        HBox buttons = new HBox(10, addButton, deleteButton);
+        HBox buttons = new HBox(10, addButton, editButton, deleteButton);
         buttons.setAlignment(Pos.CENTER);
 
         vbox.getChildren().addAll(remindersTable, buttons);
@@ -556,32 +563,21 @@ public class TaskManagerUI extends Application {
     private void showAddReminderDialog() {
         Dialog<TaskReminder> dialog = new Dialog<>();
         dialog.setTitle("Add Reminder");
-        
-        // [CHANGED] Pick Task, after checking that there exists at least one task
-        // Dropdown for selecting a task
-        ComboBox<Task> taskComboBox = new ComboBox<>();
-        taskComboBox.setItems(FXCollections.observableArrayList(taskManager.getTasks()));
-        taskComboBox.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Task task) {
-                return task == null ? "" : task.getTitle(); // Show only the title in the dropdown
-            }
 
-            @Override
-            public Task fromString(String string) {
-                return taskManager.getTasks().stream()
-                        .filter(t -> t.getTitle().equals(string))
-                        .findFirst().orElse(null);
-            }
+        ComboBox<String> taskDropdown = new ComboBox<>();
+        taskDropdown.setItems(FXCollections.observableArrayList(
+                taskManager.getTasks().stream().map(Task::getTitle).toList()));
+
+        ComboBox<TaskReminder.ReminderType> typeBox = new ComboBox<>();
+        typeBox.getItems().addAll(TaskReminder.ReminderType.values());
+        typeBox.setValue(TaskReminder.ReminderType.ONE_DAY_BEFORE); // Default
+
+        DatePicker customDatePicker = new DatePicker();
+        customDatePicker.setDisable(true);
+
+        typeBox.setOnAction(e -> {
+            customDatePicker.setDisable(typeBox.getValue() != TaskReminder.ReminderType.CUSTOM_DATE);
         });
-
-        // Disable if there are no tasks
-        if (taskManager.getTasks().isEmpty()) {
-            showError("No Tasks Available", "You must create a task before adding a reminder.");
-            return; // Exit early
-        }
-
-        DatePicker reminderDatePicker = new DatePicker();
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -589,9 +585,11 @@ public class TaskManagerUI extends Application {
         grid.setPadding(new Insets(20, 150, 10, 10));
 
         grid.add(new Label("Task Title:"), 0, 0);
-        grid.add(taskComboBox, 1, 0);
-        grid.add(new Label("Reminder Date:"), 0, 1);
-        grid.add(reminderDatePicker, 1, 1);
+        grid.add(taskDropdown, 1, 0);
+        grid.add(new Label("Reminder Type:"), 0, 1);
+        grid.add(typeBox, 1, 1);
+        grid.add(new Label("Custom Date (if applicable):"), 0, 2);
+        grid.add(customDatePicker, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
         ButtonType addButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
@@ -599,9 +597,11 @@ public class TaskManagerUI extends Application {
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == addButtonType) {
-                Task task = taskComboBox.getValue();
+                Task task = taskManager.getTasks().stream()
+                        .filter(t -> t.getTitle().equals(taskDropdown.getValue()))
+                        .findFirst().orElse(null);
                 if (task != null) {
-                    return new TaskReminder(task, reminderDatePicker.getValue());
+                    return new TaskReminder(task, typeBox.getValue(), customDatePicker.getValue());
                 }
             }
             return null;
@@ -609,12 +609,75 @@ public class TaskManagerUI extends Application {
 
         dialog.showAndWait().ifPresent(reminder -> {
             try {
-                taskManager.addReminder(reminder.getTask().getTitle(), reminder.getReminderDate());
-                refreshAllViews();
+                taskManager.addReminder(reminder.getTask().getTitle(), reminder.getType(),
+                        reminder.getCustomReminderDate());
+                refreshAllViews(); // Ensure UI updates
+                remindersTable.refresh(); // Force refresh of the table
             } catch (Exception ex) {
                 showError("Error Adding Reminder", ex.getMessage());
             }
         });
+
+    }
+
+    private void showEditReminderDialog() {
+        TaskReminder selected = remindersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("No Selection", "Please select a reminder to edit.");
+            return;
+        }
+
+        Dialog<TaskReminder> dialog = new Dialog<>();
+        dialog.setTitle("Edit Reminder");
+
+        TextField taskTitleField = new TextField(selected.getTask().getTitle());
+        taskTitleField.setDisable(true); // Prevent changing the task
+
+        ComboBox<TaskReminder.ReminderType> typeBox = new ComboBox<>();
+        typeBox.getItems().addAll(TaskReminder.ReminderType.values());
+        typeBox.setValue(selected.getType());
+
+        DatePicker customDatePicker = new DatePicker(selected.getCustomReminderDate());
+        customDatePicker.setDisable(selected.getType() != TaskReminder.ReminderType.CUSTOM_DATE);
+
+        typeBox.setOnAction(e -> {
+            customDatePicker.setDisable(typeBox.getValue() != TaskReminder.ReminderType.CUSTOM_DATE);
+        });
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        grid.add(new Label("Task Title:"), 0, 0);
+        grid.add(taskTitleField, 1, 0);
+        grid.add(new Label("Reminder Type:"), 0, 1);
+        grid.add(typeBox, 1, 1);
+        grid.add(new Label("Custom Date (if applicable):"), 0, 2);
+        grid.add(customDatePicker, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        ButtonType updateButtonType = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(updateButtonType, ButtonType.CANCEL);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == updateButtonType) {
+                return new TaskReminder(selected.getTask(), typeBox.getValue(), customDatePicker.getValue());
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(updatedReminder -> {
+            try {
+                taskManager.updateReminder(selected, updatedReminder.getType(),
+                        updatedReminder.getCustomReminderDate());
+                refreshAllViews(); // Ensure UI updates
+                remindersTable.refresh(); // Force refresh of the table
+            } catch (Exception ex) {
+                showError("Error Updating Reminder", ex.getMessage());
+            }
+        });
+
     }
 
     private void deleteSelectedReminder() {
@@ -656,7 +719,7 @@ public class TaskManagerUI extends Application {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Reminder Alert");
         alert.setHeaderText("Reminder for Task: " + reminder.getTask().getTitle());
-        alert.setContentText("Due today: " + reminder.getReminderDate());
+        alert.setContentText("Due today: " + reminder.computeReminderDate());
 
         ButtonType snoozeButton = new ButtonType("Snooze (5 min)");
         ButtonType dismissButton = new ButtonType("Dismiss", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -681,8 +744,7 @@ public class TaskManagerUI extends Application {
         LocalDate today = LocalDate.now();
 
         List<TaskReminder> dueReminders = taskManager.getReminders().stream()
-                .filter(r -> r.getReminderDate().equals(today))
-                .toList();
+                .filter(r -> r.computeReminderDate().equals(today)).toList();
 
         for (TaskReminder reminder : dueReminders) {
             showReminderAlert(reminder);

@@ -136,7 +136,7 @@ public class TaskManager {
 	public List<TaskReminder> getRemindersForTask(Task task) {
 		return reminders.stream()
 				.filter(r -> r.getTask().equals(task))
-				.toList(); // Collect to a list (Java 16+)
+				.toList(); // Collect to a list
 	}
 
 	private Task getTaskByTitle(String title) {
@@ -312,7 +312,7 @@ public class TaskManager {
 	// -----------------------------------------------------
 	// REMINDER Management
 	// -----------------------------------------------------
-	public void addReminder(String taskTitle, LocalDate reminderDate) {
+	public void addReminder(String taskTitle, TaskReminder.ReminderType type, LocalDate customDate) {
 		Task task = getTaskByTitle(taskTitle);
 		if (task == null) {
 			throw new IllegalArgumentException("Task does not exist: " + taskTitle);
@@ -320,10 +320,67 @@ public class TaskManager {
 		if (task.getStatus() == TaskStatus.COMPLETED) {
 			throw new IllegalStateException("Cannot add a reminder for a completed task!");
 		}
-		if (reminderDate.isBefore(LocalDate.now())) {
-			throw new IllegalArgumentException("Reminder date cannot be in the past!");
+
+		LocalDate reminderDate = null;
+		switch (type) {
+			case ONE_DAY_BEFORE:
+				reminderDate = task.getDeadline().minusDays(1);
+				break;
+			case ONE_WEEK_BEFORE:
+				reminderDate = task.getDeadline().minusWeeks(1);
+				break;
+			case ONE_MONTH_BEFORE:
+				reminderDate = task.getDeadline().minusMonths(1);
+				break;
+			case CUSTOM_DATE:
+				reminderDate = customDate;
+				break;
 		}
-		reminders.add(new TaskReminder(task, reminderDate));
+
+		// Validate that the reminder date makes sense
+		if (reminderDate != null && reminderDate.isBefore(LocalDate.now())) {
+			throw new IllegalArgumentException("Reminder date must be in the future.");
+		}
+
+		reminders.add(new TaskReminder(task, type, customDate));
+	}
+
+	public void updateReminder(TaskReminder oldReminder, TaskReminder.ReminderType newType, LocalDate newCustomDate) {
+		if (oldReminder == null) {
+			throw new IllegalArgumentException("Reminder cannot be null.");
+		}
+		if (!reminders.contains(oldReminder)) {
+			throw new IllegalArgumentException("Reminder does not exist.");
+		}
+
+		Task task = oldReminder.getTask();
+		if (task.getStatus() == TaskStatus.COMPLETED) {
+			throw new IllegalStateException("Cannot modify a reminder for a completed task.");
+		}
+
+		LocalDate newReminderDate = null;
+		switch (newType) {
+			case ONE_DAY_BEFORE:
+				newReminderDate = task.getDeadline().minusDays(1);
+				break;
+			case ONE_WEEK_BEFORE:
+				newReminderDate = task.getDeadline().minusWeeks(1);
+				break;
+			case ONE_MONTH_BEFORE:
+				newReminderDate = task.getDeadline().minusMonths(1);
+				break;
+			case CUSTOM_DATE:
+				newReminderDate = newCustomDate;
+				break;
+		}
+
+		// Validate that the new reminder date makes sense
+		if (newReminderDate != null && newReminderDate.isBefore(LocalDate.now())) {
+			throw new IllegalArgumentException("Reminder date must be in the future.");
+		}
+
+		oldReminder.setType(newType);
+		oldReminder.setCustomReminderDate(newCustomDate);
 	}
 
 	// -----------------------------------------------------
