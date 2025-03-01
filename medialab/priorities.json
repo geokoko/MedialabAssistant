@@ -1,3 +1,14 @@
-[ {
-  "name" : "Default"
-} ]
+[
+  {
+    "name": "Default"
+  },
+  {
+    "name": "High"
+  },
+  {
+    "name": "Medium"
+  },
+  {
+    "name": "Low"
+  }
+]

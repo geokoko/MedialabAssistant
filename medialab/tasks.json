@@ -1,1 +1,50 @@
-[ ]
+[
+  {
+    "title": "History",
+    "description": "",
+    "category": "School",
+    "priority": "High",
+    "deadline": "2025-03-07",
+    "status": "OPEN"
+  },
+  {
+    "title": "Study carokann",
+    "description": "",
+    "category": "Chess Club",
+    "priority": "Default",
+    "deadline": "2025-03-07",
+    "status": "OPEN"
+  },
+  {
+    "title": "Gym Workout",
+    "description": "Leg day exercises",
+    "category": "Personal",
+    "priority": "Medium",
+    "deadline": "2025-04-01",
+    "status": "OPEN"
+  },
+  {
+    "title": "Buy groceries",
+    "description": "Milk, eggs, bread",
+    "category": "Personal",
+    "priority": "Low",
+    "deadline": "2025-03-10",
+    "status": "OPEN"
+  },
+  {
+    "title": "Project Meeting",
+    "description": "Discuss requirements",
+    "category": "Work",
+    "priority": "High",
+    "deadline": "2025-03-15",
+    "status": "IN_PROGRESS"
+  },
+  {
+    "title": "Math assignment",
+    "description": "Chapter 3 exercises",
+    "category": "School",
+    "priority": "Default",
+    "deadline": "2025-03-05",
+    "status": "COMPLETED"
+  }
+]

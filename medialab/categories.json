@@ -1,1 +1,14 @@
-[ ]
+[
+  {
+    "name": "School"
+  },
+  {
+    "name": "Chess Club"
+  },
+  {
+    "name": "Personal"
+  },
+  {
+    "name": "Work"
+  }
+]

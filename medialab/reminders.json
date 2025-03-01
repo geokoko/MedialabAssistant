@@ -1,1 +1,62 @@
-[ ]
+[
+  {
+    "task": {
+      "title": "Study carokann",
+      "description": "",
+      "category": "Chess Club",
+      "priority": "Default",
+      "deadline": "2025-03-07",
+      "status": "OPEN"
+    },
+    "type": "ONE_DAY_BEFORE",
+    "customReminderDate": null
+  },
+  {
+    "task": {
+      "title": "Gym Workout",
+      "description": "Leg day exercises",
+      "category": "Personal",
+      "priority": "Medium",
+      "deadline": "2025-04-01",
+      "status": "OPEN"
+    },
+    "type": "ONE_WEEK_BEFORE",
+    "customReminderDate": null
+  },
+  {
+    "task": {
+      "title": "Buy groceries",
+      "description": "Milk, eggs, bread",
+      "category": "Personal",
+      "priority": "Low",
+      "deadline": "2025-03-10",
+      "status": "OPEN"
+    },
+    "type": "ONE_DAY_BEFORE",
+    "customReminderDate": null
+  },
+  {
+    "task": {
+      "title": "Project Meeting",
+      "description": "Discuss requirements",
+      "category": "Work",
+      "priority": "High",
+      "deadline": "2025-03-15",
+      "status": "IN_PROGRESS"
+    },
+    "type": "ONE_MONTH_BEFORE",
+    "customReminderDate": null
+  },
+  {
+    "task": {
+      "title": "Math assignment",
+      "description": "Chapter 3 exercises",
+      "category": "School",
+      "priority": "Default",
+      "deadline": "2025-03-05",
+      "status": "COMPLETED"
+    },
+    "type": "CUSTOM_DATE",
+    "customReminderDate": "2025-03-01"
+  }
+]
