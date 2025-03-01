@@ -1,14 +1,9 @@
-[
-  {
-    "name": "School"
-  },
-  {
-    "name": "Chess Club"
-  },
-  {
-    "name": "Personal"
-  },
-  {
-    "name": "Work"
-  }
-]
+[ {
+  "name" : "School"
+}, {
+  "name" : "Chess Club"
+}, {
+  "name" : "Personal"
+}, {
+  "name" : "Work"
+} ]

@@ -1,14 +1,9 @@
-[
-  {
-    "name": "Default"
-  },
-  {
-    "name": "High"
-  },
-  {
-    "name": "Medium"
-  },
-  {
-    "name": "Low"
-  }
-]
+[ {
+  "name" : "Default"
+}, {
+  "name" : "High"
+}, {
+  "name" : "Medium"
+}, {
+  "name" : "Low"
+} ]
