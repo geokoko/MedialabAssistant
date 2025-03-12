@@ -68,13 +68,16 @@ The system allows users to:
 
 ### Troubleshooting
 1. ClassNotFoundException (JavaFX-related)
-    JavaFX is managed by Gradle, but if issues occur, ensure org.openjfx.javafxplugin is applied in build.gradle.
 
-2. JSON Parsing Errors
-    If corrupted JSON files cause startup failures, delete the problematic files in medialab/ to reset data.
+   JavaFX is managed by Gradle, but if issues occur, ensure org.openjfx.javafxplugin is applied in build.gradle.
 
-3. Date Validation Issues
-    The system prevents setting deadlines in the past.
+3. JSON Parsing Errors
+
+   If corrupted JSON files cause startup failures, delete the problematic files in medialab/ to reset data.
+
+5. Date Validation Issues
+
+   The system prevents setting deadlines in the past.
 
 ## References
 * [JavaFX](https://docs.oracle.com/javase/8/javafx/get-started-tutorial/jfx-overview.htm)
